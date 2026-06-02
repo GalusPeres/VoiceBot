@@ -14,10 +14,9 @@ export default function manifestRoutes(client) {
       avatar: botUser?.displayAvatarURL({ size: 128 }) || null,
       capabilities: ['status', 'guilds', 'logs', 'stats', 'settings', 'voice-control'],
       pages: [
-        { id: 'control', label: 'Voice Control', icon: 'mic', kind: 'voice-control' },
-        { id: 'stats',   label: 'Statistics',    icon: 'bar-chart', kind: 'stats' },
-        { id: 'logs',    label: 'Live Logs',     icon: 'activity',  kind: 'logs' },
-        { id: 'settings',label: 'Settings',      icon: 'settings',  kind: 'settings' },
+        { id: 'stats',    label: 'Statistics', icon: 'stats',    kind: 'stats' },
+        { id: 'logs',     label: 'Live Logs',  icon: 'logs',     kind: 'logs' },
+        { id: 'settings', label: 'Settings',   icon: 'settings', kind: 'settings' },
       ],
       endpoints: {
         status:         '/api/status',
