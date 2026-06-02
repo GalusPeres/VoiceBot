@@ -9,11 +9,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# whisper.cpp vorab kompilieren (cmake ist hier verfügbar)
-# → Runtime braucht kein cmake
+# whisper.cpp kompilieren, dann alles außer dem Binary löschen
 RUN cd /app/node_modules/nodejs-whisper/cpp/whisper.cpp \
     && cmake -B build -DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF \
-    && cmake --build build -j$(nproc) --config Release
+    && cmake --build build -j$(nproc) --config Release \
+    && BINARY=$(find build -name "whisper-cli" 2>/dev/null | head -1) \
+    && [ -z "$BINARY" ] && BINARY=$(find build -name "main" 2>/dev/null | head -1) || true \
+    && cp "$BINARY" /tmp/whisper-cli \
+    && cd /app/node_modules/nodejs-whisper/cpp \
+    && rm -rf whisper.cpp \
+    && mkdir -p whisper.cpp/build/bin \
+    && mv /tmp/whisper-cli whisper.cpp/build/bin/whisper-cli
 
 # Piper TTS Binary herunterladen
 RUN wget -q https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz \
