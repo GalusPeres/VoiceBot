@@ -24,7 +24,7 @@ COPY . .
 FROM node:22-slim AS runtime
 
 RUN apt-get update && apt-get install -y \
-    libstdc++6 ffmpeg \
+    libstdc++6 ffmpeg wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
