@@ -1,17 +1,19 @@
-# ─── Stage 1: Builder (kompiliert native Module) ──────────────────────────────
+# ─── Stage 1: Builder ─────────────────────────────────────────────────────────
 FROM node:22-slim AS builder
 
-# cmake absichtlich NICHT installiert:
-#   → node-llama-cpp kann nicht selbst kompilieren
-#   → lädt stattdessen fertig kompiliertes Binary für linux/x64 herunter (~50 MB)
-# g++ / make / python3 / git bleiben für nodejs-whisper (nutzt node-gyp, kein cmake)
 RUN apt-get update && apt-get install -y \
-    make g++ git python3 wget curl \
+    cmake make g++ git python3 wget curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+
+# whisper.cpp vorab kompilieren (cmake ist hier verfügbar)
+# → Runtime braucht kein cmake
+RUN cd /app/node_modules/nodejs-whisper/cpp/whisper.cpp \
+    && cmake -B build -DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF \
+    && cmake --build build -j$(nproc) --config Release
 
 # Piper TTS Binary herunterladen
 RUN wget -q https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz \
@@ -20,7 +22,7 @@ RUN wget -q https://github.com/rhasspy/piper/releases/download/2023.11.14-2/pipe
 
 COPY . .
 
-# ─── Stage 2: Runtime (nur was gebraucht wird) ────────────────────────────────
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM node:22-slim AS runtime
 
 RUN apt-get update && apt-get install -y \
@@ -29,14 +31,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Kompilierte node_modules + Piper-Binary aus Builder kopieren
+# node_modules inkl. kompiliertem whisper-cli + Piper aus Builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/piper ./piper
-
-# Bot-Code kopieren
 COPY . .
 
-# Data-Ordner anlegen (wird auf Unraid als Volume gemountet)
 RUN mkdir -p /data/models/whisper /data/models/llm /data/models/tts /data/temp
 
 ENV NODE_ENV=production
@@ -44,5 +43,4 @@ ENV DATA_DIR=/data
 ENV PIPER_BIN=/app/piper/piper
 
 EXPOSE 3003
-
 CMD ["node", "bot.js"]
