@@ -1,11 +1,29 @@
 import { nodewhisper } from 'nodejs-whisper';
 import path from 'path';
 import fs from 'fs';
+import { spawnSync } from 'child_process';
 import { DATA_DIR, WHISPER_MODEL } from '../utils/constants.js';
 import { logger } from '../utils/logger.js';
 
-// Whisper lädt Modelle automatisch beim ersten Aufruf herunter
-process.env.WHISPER_MODEL_DIR = path.join(DATA_DIR, 'models', 'whisper');
+const MODEL_DIR  = path.join(DATA_DIR, 'models', 'whisper');
+const MODEL_FILE = path.join(MODEL_DIR, `ggml-${WHISPER_MODEL}.bin`);
+const MODEL_URL  = `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${WHISPER_MODEL}.bin`;
+
+// nodejs-whisper soll im vorbereiteten Ordner nachschauen
+process.env.WHISPER_MODEL_DIR = MODEL_DIR;
+
+async function ensureModel() {
+  fs.mkdirSync(MODEL_DIR, { recursive: true });
+  if (fs.existsSync(MODEL_FILE)) return;
+
+  logger.info(`[STT] Lade Whisper-Modell (${WHISPER_MODEL}) herunter — bitte warten...`);
+  const r = spawnSync('wget', ['-q', '-O', MODEL_FILE, MODEL_URL], { stdio: 'inherit' });
+  if (r.status !== 0) {
+    fs.rmSync(MODEL_FILE, { force: true });
+    throw new Error('Whisper-Modell-Download fehlgeschlagen');
+  }
+  logger.info('[STT] Whisper-Modell heruntergeladen ✅');
+}
 
 export async function transcribe(audioFilePath) {
   if (!fs.existsSync(audioFilePath)) {
@@ -14,10 +32,12 @@ export async function transcribe(audioFilePath) {
   }
 
   try {
+    await ensureModel();
+
     logger.info('[STT] Transkribiere...');
     const result = await nodewhisper(audioFilePath, {
       modelName: WHISPER_MODEL,
-      autoDownloadModelName: WHISPER_MODEL,
+      // kein autoDownloadModelName — wir verwalten den Download selbst
       removeWavFileAfterTranscription: false,
       withCuda: false,
       whisperOptions: {
@@ -28,7 +48,7 @@ export async function transcribe(audioFilePath) {
     });
 
     const text = (result || '').trim()
-      .replace(/\[.*?\]/g, '')   // [BLANK_AUDIO] etc. entfernen
+      .replace(/\[.*?\]/g, '')
       .replace(/\(.*?\)/g, '')
       .trim();
 
