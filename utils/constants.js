@@ -6,7 +6,7 @@ export const SOUND_BOT_URL    = process.env.SOUND_BOT_URL    || 'http://localhos
 export const BOT_API_TOKEN    = process.env.BOT_API_TOKEN    || '';
 export const BOT_API_PORT     = Number(process.env.BOT_API_PORT) || 3003;
 export const BOT_USERNAME     = process.env.BOT_USERNAME     || 'VoiceBot';
-export const COMMAND_PREFIX   = process.env.COMMAND_PREFIX   || '.';
+export const COMMAND_PREFIX   = process.env.COMMAND_PREFIX   || '!';
 export const MENTION_ONLY     = process.env.MENTION_ONLY === 'true';
 export const CONTROL_CHANNEL_ID = process.env.CONTROL_CHANNEL_ID || '';
 
