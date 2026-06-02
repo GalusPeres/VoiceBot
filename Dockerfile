@@ -1,13 +1,16 @@
 # ─── Stage 1: Builder (kompiliert native Module) ──────────────────────────────
 FROM node:22-slim AS builder
 
+# cmake absichtlich NICHT installiert:
+#   → node-llama-cpp kann nicht selbst kompilieren
+#   → lädt stattdessen fertig kompiliertes Binary für linux/x64 herunter (~50 MB)
+# g++ / make / python3 / git bleiben für nodejs-whisper (nutzt node-gyp, kein cmake)
 RUN apt-get update && apt-get install -y \
-    cmake make g++ git python3 wget curl \
+    make g++ git python3 wget curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY package*.json ./
-# Kompiliert node-llama-cpp (llama.cpp) + nodejs-whisper (whisper.cpp)
 RUN npm ci
 
 # Piper TTS Binary herunterladen

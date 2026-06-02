@@ -12,7 +12,7 @@ export const CONTROL_CHANNEL_ID = process.env.CONTROL_CHANNEL_ID || '';
 
 // Model paths (in mounted /data folder)
 export const WHISPER_MODEL    = process.env.WHISPER_MODEL    || 'small';
-export const LLM_MODEL_PATH   = process.env.LLM_MODEL_PATH   || path.join(DATA_DIR, 'models', 'llm', 'Qwen3-1.7B-Q4_K_M.gguf');
+export const LLM_MODEL_PATH   = process.env.LLM_MODEL_PATH   || path.join(DATA_DIR, 'models', 'llm', 'Qwen3.5-2B-Q4_K_M.gguf');
 export const PIPER_BIN        = process.env.PIPER_BIN        || '/app/piper/piper';
 export const PIPER_MODEL_PATH = process.env.PIPER_MODEL_PATH || path.join(DATA_DIR, 'models', 'tts', 'de_DE-thorsten-medium.onnx');
 export const TMP_DIR          = path.join(DATA_DIR, 'temp');
