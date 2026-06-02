@@ -5,6 +5,7 @@ import { parseIntentWithLLM, initLLM, isLLMReady } from './services/llm.js';
 import { initTTS } from './services/tts.js';
 import { handleIntent } from './services/commandHandler.js';
 import { joinVoice, leaveVoice } from './services/voiceManager.js';
+import { initSTT } from './services/stt.js';
 import { startApiServer, trackCommand } from './api/server.js';
 import { COMMAND_PREFIX, MENTION_ONLY, CONTROL_CHANNEL_ID } from './utils/constants.js';
 
@@ -150,9 +151,10 @@ client.once(Events.ClientReady, async () => {
   logger.info(`✅ VoiceBot eingeloggt als ${client.user.tag}`);
   logger.info(`📡 Präfix: "${COMMAND_PREFIX}" | Mention-only: ${MENTION_ONLY}`);
 
-  // LLM + TTS im Hintergrund laden
+  // Modelle im Hintergrund laden
   initLLM().catch(err => logger.error('[Init] LLM:', err.message));
   initTTS().catch(err => logger.error('[Init] TTS:', err.message));
+  initSTT().catch(err => logger.error('[Init] STT:', err.message));
 });
 
 client.on(Events.Error, err => logger.error('[Discord]', err.message));
