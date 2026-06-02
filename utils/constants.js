@@ -10,6 +10,10 @@ export const COMMAND_PREFIX   = process.env.COMMAND_PREFIX   || '!';
 export const MENTION_ONLY     = process.env.MENTION_ONLY === 'true';
 export const CONTROL_CHANNEL_ID = process.env.CONTROL_CHANNEL_ID || '';
 
+// Ollama (optional, leer = deaktiviert)
+export const OLLAMA_URL       = process.env.OLLAMA_URL       || '';
+export const OLLAMA_MODEL     = process.env.OLLAMA_MODEL     || 'llama3';
+
 // Model paths (in mounted /data folder)
 export const WHISPER_MODEL    = process.env.WHISPER_MODEL    || 'small';
 export const LLM_MODEL_PATH   = process.env.LLM_MODEL_PATH   || path.join(DATA_DIR, 'models', 'llm', 'Qwen3.5-2B-Q4_K_M.gguf');
